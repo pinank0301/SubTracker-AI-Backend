@@ -1,0 +1,170 @@
+# ==============================================================================
+# SubTracker Microservices Platform — Single EC2 Host Docker Compose
+# Architecture:
+#   - discovery-server (Eureka) : Internal port 8761 (healthy before dependents start)
+#   - auth-service              : Internal port 8081 (registers with Eureka)
+#   - subscription-service      : Internal port 8082 (registers with Eureka)
+#   - notification-service      : Internal port 8083 (registers with Eureka, Feign)
+#   - api-gateway               : Public port 8080 (routes to internal services & Render AI)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Discovery Server (Spring Cloud Netflix Eureka Server)
+  # ----------------------------------------------------------------------------
+  discovery-server:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    container_name: discovery-server
+    restart: unless-stopped
+    networks:
+      - subtracker-network
+    environment:
+      - JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError}
+    ports:
+      # Expose Eureka dashboard locally/debug if needed; can be removed or firewalled in production
+      - "${DISCOVERY_PORT:-8761}:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 25s
+
+  # ----------------------------------------------------------------------------
+  # 2. Auth Service (Authentication, Registration, JWT issuing)
+  # ----------------------------------------------------------------------------
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - subtracker-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - AUTH_DB_URL=${AUTH_DB_URL:-jdbc:postgresql://host.docker.internal:5432/authdb}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - JWT_SECRET=${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
+      - JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ----------------------------------------------------------------------------
+  # 3. Subscription Service (Core Subscription & Billing Operations)
+  # ----------------------------------------------------------------------------
+  subscription-service:
+    build:
+      context: ./subscription-service
+      dockerfile: Dockerfile
+    container_name: subscription-service
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - subtracker-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - SUBSCRIPTION_DB_URL=${SUBSCRIPTION_DB_URL:-jdbc:postgresql://host.docker.internal:5432/subscriptiondb}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ----------------------------------------------------------------------------
+  # 4. Notification Service (Email Notifications & Feign Clients)
+  # ----------------------------------------------------------------------------
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - subtracker-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - NOTIFICATION_DB_URL=${NOTIFICATION_DB_URL:-jdbc:postgresql://host.docker.internal:5432/notificationdb}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST:-smtp.gmail.com}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT:-587}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME:-pinanktrivedi694@gmail.com}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD:-epizuqyuimbzmzac}
+      - JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8083/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ----------------------------------------------------------------------------
+  # 5. API Gateway (Externally Accessible Spring Cloud Gateway)
+  # ----------------------------------------------------------------------------
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      subscription-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    networks:
+      - subtracker-network
+    ports:
+      # Main entry point exposed to the EC2 host / internet / Nginx reverse proxy
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - AI_AGENT_SERVICE_URL=${AI_AGENT_SERVICE_URL:-https://subtracker-ai-agent.onrender.com}
+      - JWT_SECRET=${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
+      - JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+# ==============================================================================
+# Dedicated Docker Bridge Network for inter-service communication
+# ==============================================================================
+networks:
+  subtracker-network:
+    name: subtracker-network
+    driver: bridge

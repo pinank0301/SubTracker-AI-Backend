@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# IDE & Editor
+.idea
+.vscode
+*.iml
+.project
+.classpath
+.settings
+.factorypath
+
+# Build artifacts & logs
+target/
+build/
+*.log
+logs/
+
+# Build tool caches
+.gradle/
+.mvn/wrapper/maven-wrapper.jar
+
+# Python & Node artifacts
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Environment files & secrets
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db

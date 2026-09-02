@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Subscription Renewal Reminder</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+
+<!-- Outer Container -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+       style="background-color: #f0f2f5; padding: 40px 0;">
+    <tr>
+        <td align="center">
+
+            <!-- Email Card -->
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                   style="background-color: #ffffff; border-radius: 16px; overflow: hidden;
+                          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
+
+                <!-- Header Banner -->
+                <tr>
+                    <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                               padding: 40px 40px 30px; text-align: center;">
+
+                        <!-- Bell Icon -->
+                        <div style="width: 64px; height: 64px; background-color: rgba(255,255,255,0.2);
+                                    border-radius: 50%; margin: 0 auto 20px; line-height: 64px;
+                                    font-size: 32px;">
+                            ⏰
+                        </div>
+
+                        <h1 style="color: #ffffff; font-size: 24px; font-weight: 700;
+                                   margin: 0 0 8px; letter-spacing: -0.5px;">
+                            Renewal Reminder
+                        </h1>
+                        <p style="color: rgba(255,255,255,0.85); font-size: 15px; margin: 0;">
+                            Your subscription is renewing soon
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Body Content -->
+                <tr>
+                    <td style="padding: 36px 40px 20px;">
+
+                        <!-- Greeting -->
+                        <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                            Hi <strong th:text="${recipientName}">User</strong>,
+                        </p>
+
+                        <p style="color: #555555; font-size: 15px; line-height: 1.7; margin: 0 0 28px;">
+                            This is a friendly reminder that your subscription is renewing in
+                            <strong th:text="${daysUntilRenewal}">7</strong> day(s).
+                            Please review the details below:
+                        </p>
+
+                        <!-- Subscription Details Card -->
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                               style="background-color: #f8f9fc; border-radius: 12px; border: 1px solid #e8ecf1;
+                                      overflow: hidden; margin-bottom: 28px;">
+
+                            <!-- Subscription Name Header -->
+                            <tr>
+                                <td colspan="2" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                                                       padding: 16px 24px;">
+                                    <p style="color: #ffffff; font-size: 18px; font-weight: 700;
+                                              margin: 0; letter-spacing: -0.3px;">
+                                        <span th:text="${subscriptionName}">Netflix</span>
+                                    </p>
+                                </td>
+                            </tr>
+
+                            <!-- Detail Rows -->
+                            <tr>
+                                <td style="padding: 16px 24px 8px; color: #888888; font-size: 13px;
+                                           font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Renewal Date
+                                </td>
+                                <td style="padding: 16px 24px 8px; color: #333333; font-size: 15px;
+                                           font-weight: 600; text-align: right;">
+                                    <span th:text="${renewalDate}">September 01, 2026</span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="2" style="padding: 0 24px;">
+                                    <hr style="border: none; border-top: 1px solid #e8ecf1; margin: 0;"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding: 8px 24px 16px; color: #888888; font-size: 13px;
+                                           font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Amount
+                                </td>
+                                <td style="padding: 8px 24px 16px; color: #333333; font-size: 15px;
+                                           font-weight: 600; text-align: right;">
+                                    <span th:text="${currency}">USD</span>
+                                    <span th:text="${amount}">14.99</span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="2" style="padding: 0 24px;">
+                                    <hr style="border: none; border-top: 1px solid #e8ecf1; margin: 0;"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding: 8px 24px 16px; color: #888888; font-size: 13px;
+                                           font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Days Remaining
+                                </td>
+                                <td style="padding: 8px 24px 16px; text-align: right;">
+                                    <span style="background-color: #fef3c7; color: #92400e; font-size: 13px;
+                                                 font-weight: 700; padding: 4px 12px; border-radius: 20px;"
+                                          th:text="${daysUntilRenewal} + ' days'">7 days</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Info Note -->
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                               style="background-color: #eff6ff; border-radius: 8px; border-left: 4px solid #3b82f6;
+                                      margin-bottom: 28px;">
+                            <tr>
+                                <td style="padding: 14px 20px;">
+                                    <p style="color: #1e40af; font-size: 14px; line-height: 1.6; margin: 0;">
+                                        💡 <strong>Tip:</strong> If you no longer need this subscription,
+                                        you can cancel or modify it before the renewal date to avoid charges.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background-color: #f8f9fc; padding: 24px 40px; border-top: 1px solid #e8ecf1;">
+                        <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
+                            This is an automated notification from the Subscription Platform.<br/>
+                            You received this email because you have an active subscription
+                            with a renewal date approaching.<br/><br/>
+                            &copy; <span th:text="${currentYear}">2026</span> Subscription Platform.
+                            All rights reserved.
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+            <!-- End Email Card -->
+
+        </td>
+    </tr>
+</table>
+<!-- End Outer Container -->
+
+</body>
+</html>
