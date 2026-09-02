@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/ai-agent-service/.venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/ai-agent-service"
+    ],
+    "java.compile.nullAnalysis.mode": "disabled"
+}

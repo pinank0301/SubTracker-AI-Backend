@@ -36,7 +36,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers("/api/auth/**").permitAll()
-                        .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .pathMatchers("/health", "/actuator/health", "/actuator/info").permitAll()
                         // All other requests must be authenticated
                         .anyExchange().authenticated()
                 )

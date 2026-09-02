@@ -8,6 +8,7 @@ com\subscription\notification\service\NotificationProducer.class
 com\subscription\notification\config\SwaggerConfig.class
 com\subscription\notification\exception\NotificationProcessingException.class
 com\subscription\notification\entity\NotificationOutbox.class
+com\subscription\notification\controller\HealthController.class
 com\subscription\notification\NotificationServiceApplication.class
 com\subscription\notification\util\CurrentUserUtil.class
 com\subscription\notification\dto\ApiResponse$ApiResponseBuilder.class

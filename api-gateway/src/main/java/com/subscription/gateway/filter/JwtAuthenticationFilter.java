@@ -33,6 +33,7 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/auth/**",
+            "/health",
             "/actuator/health",
             "/actuator/info"
     );
